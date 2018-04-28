@@ -2,11 +2,9 @@ package main
 
 import (
 	"flag"
-	"html/template"
 	"log"
 	"net/http"
 
-	"angular-go-web-app/go/models"
 	"angular-go-web-app/go/routes/MemberAPI/v1"
 
 	"github.com/gorilla/mux"
@@ -14,20 +12,20 @@ import (
 
 var addr = flag.String("addr", ":9090", "http service address")
 
-var tmpl = template.Must(template.ParseFiles("./assets/public/html/index.html"))
+//var tmpl = template.Must(template.ParseFiles("./assets/public/html/index.html"))
 
 // Index returning the landing page
 func Index(w http.ResponseWriter, req *http.Request) {
-	data := models.IndexPageData{
+	/*data := models.IndexPageData{
 		PageTitle: "API documentation",
 		List: []models.ListItem{
 			{Title: "Member", URL: "http://localhost:9090/v1/member"},
 		},
-	}
-	err := tmpl.Execute(w, data)
+	}*/
+	/*err := tmpl.Execute(w, data)
 	if err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
-	}
+	}*/
 }
 
 func main() {

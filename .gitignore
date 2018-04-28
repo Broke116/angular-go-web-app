@@ -1,0 +1,7 @@
+.env
+
+/go/bin/restapi.exe
+/go/Gopkg.lock
+/go/Gopkg.toml
+
+/go/vendor

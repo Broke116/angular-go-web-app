@@ -1,0 +1,20 @@
+version: '3'
+services:
+  database:
+    image: mongo
+    env_file: .env    
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME= ${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD= ${MONGO_INITDB_ROOT_PASSWORD}
+    volumes:
+      - "mongodata:/data/db"
+    networks:
+      - network1
+    ports:
+      - "27017:27017"
+    
+volumes:
+  mongodata:
+
+networks:
+  network1:
