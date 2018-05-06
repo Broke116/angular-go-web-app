@@ -7,60 +7,146 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+
+	mgo "gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
-var members = make(map[string]models.Member)
+const (
+	server     = "mongodb://db:27017"
+	database   = "airline"
+	collection = "members"
+)
+
+// MongoSession is a struct holding the session of Mongodb
+type MongoSession struct {
+	session *mgo.Session
+}
+
+var mongoSession = MongoSession{}
 
 func init() {
-	members["1"] = models.Member{ID: "1", Firstname: "Kara", Lastname: "Murat",
-		Address: &models.Address{City: "Dublin", Country: "Ireland"}}
+	session, err := mgo.Dial(server)
+	if err != nil {
+		panic(err)
+	}
 
-	members["2"] = models.Member{ID: "2", Firstname: "Arif", Lastname: "Isik"}
+	mongoSession.session = session
 }
 
 // GetMembersEndpoint returns all users.
 func GetMembersEndpoint(w http.ResponseWriter, req *http.Request) {
-	json.NewEncoder(w).Encode(members)
+	col := mongoSession.session.DB(database).C(collection)
+	var members []models.Member
+	col.Find(bson.M{}).All(&members)
+
 	fmt.Println(req.Method, req.URL)
+	data, _ := json.Marshal(members)
+
+	json.NewEncoder(w).Encode(members)
+	w.Header().Set("Content-Type", "application/json;")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.WriteHeader(http.StatusOK)
+	w.Write(data)
+	return
 }
 
-// GetMemberEndpoint returns a specific user
+// GetMemberEndpoint - GET / member - returns a specific user
 func GetMemberEndpoint(w http.ResponseWriter, req *http.Request) {
-	params := mux.Vars(req)
-	member, _ := members[params["id"]]
+	// get id paramtere
+	vars := mux.Vars(req)
+	id := vars["id"]
 
-	if member.ID != "" {
-		fmt.Println(req.Method, req.URL)
-		json.NewEncoder(w).Encode(member)
-	} else {
-		json.NewEncoder(w).Encode(&models.Error{Errortype: "member not found", Statuscode: 404})
+	// check if the id is valid
+	if !bson.IsObjectIdHex(id) {
+		CheckError(w, "Invalid ObjectId", http.StatusNotFound) // 404 status code
 	}
+
+	member := bson.ObjectIdHex(id)
+
+	if err := mongoSession.session.DB(database).C(collection).FindId(member); err != nil {
+		CheckError(w, "Error when getting the member", http.StatusInternalServerError) // 500 status code
+	}
+
+	fmt.Println(req.Method, req.URL)
+	data, _ := json.Marshal(member)
+
+	json.NewEncoder(w).Encode(member)
+	w.Header().Set("Content-Type", "application/json;")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.WriteHeader(http.StatusOK)
+	w.Write(data)
+	return
 }
 
-// CreateMemberEndpoint creates a new member
-func CreateMemberEndpoint(w http.ResponseWriter, req *http.Request) {
-	params := mux.Vars(req)
+// InsertMemberEndpoint - POST / insertMember - creates a new member
+func InsertMemberEndpoint(w http.ResponseWriter, req *http.Request) {
+	defer req.Body.Close()
 
 	var member models.Member
-	_ = json.NewDecoder(req.Body).Decode(&member)
+	if err := json.NewDecoder(req.Body).Decode(&member); err != nil { // decode body
+		CheckError(w, err.Error(), http.StatusInternalServerError) // 500 status code
+	}
 
-	member.ID = params["id"]
-	members[member.ID] = member
+	member.ID = bson.NewObjectId()
+	if err := mongoSession.session.DB(database).C(collection).Insert(&member); err != nil {
+		CheckError(w, err.Error(), http.StatusInternalServerError) // 500 status code
+	}
 
 	fmt.Println(req.Method, req.URL)
-	json.NewEncoder(w).Encode(members)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated) // 201 status code
+	return
 }
 
-// DeleteMemberEndpoint deletes the member
-func DeleteMemberEndpoint(w http.ResponseWriter, req *http.Request) {
-	params := mux.Vars(req)
-	id, _ := params["id"]
+// UpdateMemberEndpoint - v1/updateMember PUT - is used to update the related member
+func UpdateMemberEndpoint(w http.ResponseWriter, req *http.Request) {
+	defer req.Body.Close()
 
-	if id != "" {
-		delete(members, id)
-		fmt.Println(req.Method, req.URL)
-		json.NewEncoder(w).Encode(members)
-	} else {
-		json.NewEncoder(w).Encode(&models.Error{Errortype: "member not found", Statuscode: 404})
+	var member models.Member
+	if err := json.NewDecoder(req.Body).Decode(&member); err != nil {
+		CheckError(w, err.Error(), http.StatusInternalServerError) // 500 status code
 	}
+
+	member.ID = bson.NewObjectId()
+	if err := mongoSession.session.DB(database).C(collection).UpdateId(member.ID, member); err != nil {
+		CheckError(w, err.Error(), http.StatusInternalServerError) // 500 status code
+	}
+
+	fmt.Println(req.Method, req.URL)
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.WriteHeader(http.StatusOK) // status code
+	return
+}
+
+// DeleteMemberEndpoint - DELETE member/{id} / member - deletes the member
+func DeleteMemberEndpoint(w http.ResponseWriter, req *http.Request) {
+	// get id paramtere
+	vars := mux.Vars(req)
+	id := vars["id"]
+
+	// check if the id is valid
+	if !bson.IsObjectIdHex(id) {
+		CheckError(w, "Invalid ObjectId", http.StatusNotFound) // 404 status code
+	}
+
+	member := bson.ObjectIdHex(id)
+
+	if err := mongoSession.session.DB(database).C(collection).Remove(member); err != nil {
+		CheckError(w, err.Error(), http.StatusInternalServerError) // 500 status code
+	}
+
+	fmt.Println(req.Method, req.URL)
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.WriteHeader(http.StatusOK) // 200 status code
+	return
+}
+
+// CheckError is used to handle endpoint errors
+func CheckError(w http.ResponseWriter, err string, statusCode int) {
+	fmt.Println(&models.Error{Definition: err, Statuscode: statusCode})
+	w.WriteHeader(statusCode)
+	return
 }

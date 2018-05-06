@@ -5,3 +5,5 @@
 /go/Gopkg.toml
 
 /go/vendor
+
+db

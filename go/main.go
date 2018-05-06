@@ -36,8 +36,9 @@ func main() {
 	router.Handle("/static/", http.StripPrefix("/static",
 		http.FileServer(http.Dir("./assets"))))
 	router.HandleFunc("/v1/member", apimember.GetMembersEndpoint).Methods("GET")
+	router.HandleFunc("/v1/insertMember", apimember.InsertMemberEndpoint).Methods("POST")
+	router.HandleFunc("/v1/updateMember", apimember.UpdateMemberEndpoint).Methods("PUT")
 	router.HandleFunc("/v1/member/{id}", apimember.GetMemberEndpoint).Methods("GET")
-	router.HandleFunc("/v1/member/{id}", apimember.CreateMemberEndpoint).Methods("POST")
 	router.HandleFunc("/v1/member/{id}", apimember.DeleteMemberEndpoint).Methods("DELETE")
 
 	log.Fatal(http.ListenAndServe(*addr, router))

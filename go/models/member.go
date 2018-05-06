@@ -1,5 +1,7 @@
 package models
 
+import "gopkg.in/mgo.v2/bson"
+
 // Address defines the fields of address struct
 type Address struct {
 	City    string `json:"city,omitempty"`
@@ -8,8 +10,17 @@ type Address struct {
 
 // Member defines the fields of member struct
 type Member struct {
-	ID        string   `json:"id,omitempty"`
-	Firstname string   `json:"firstname,omitempty"`
-	Lastname  string   `json:"lastname,omitempty"`
-	Address   *Address `json:"address,omitempty"`
+	ID         bson.ObjectId `json:"id" bson:"_id`
+	Fullname   string        `json:"fullname" bson:"fullname"`
+	Gender     string        `json:"gender" bson:"gender"`
+	Age        int           `json:"age" bson:"age"`
+	Company    string        `json:"company" bson:"company"`
+	Email      string        `json:"email" bson:"email"`
+	Phone      string        `json:"phone" bson:"phone"`
+	InsertDate string        `json:"insert_date" bson:"insert_date"`
+	Status     bool          `json:"status" bson:"status"`
+	//Address    *Address `json:"address,omitempty"`
 }
+
+// Members is an array of Member
+type Members []Member

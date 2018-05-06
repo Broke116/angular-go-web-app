@@ -1,20 +1,27 @@
 version: '3'
 services:
-  database:
+  api:
+    build: "./go"
+    ports:
+      - "9090:9090"
+    depends_on:
+      - db
+    links:
+      - db
+    networks:
+      - backend
+  db:
     image: mongo
-    env_file: .env    
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME= ${MONGO_INITDB_ROOT_USERNAME}
-      - MONGO_INITDB_ROOT_PASSWORD= ${MONGO_INITDB_ROOT_PASSWORD}
+    ports:
+      - "27017:27017"
     volumes:
       - "mongodata:/data/db"
     networks:
-      - network1
-    ports:
-      - "27017:27017"
-    
+      - backend
+
 volumes:
-  mongodata:
+  mongodata:  
 
 networks:
-  network1:
+  backend:
+    driver: bridge
