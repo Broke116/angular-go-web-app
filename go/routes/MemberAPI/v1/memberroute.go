@@ -41,13 +41,9 @@ func GetMembersEndpoint(w http.ResponseWriter, req *http.Request) {
 	col.Find(bson.M{}).All(&members)
 
 	fmt.Println(req.Method, req.URL)
-	data, _ := json.Marshal(members)
 
 	json.NewEncoder(w).Encode(members)
 	w.Header().Set("Content-Type", "application/json;")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.WriteHeader(http.StatusOK)
-	w.Write(data)
 	return
 }
 
@@ -68,7 +64,7 @@ func GetMemberEndpoint(w http.ResponseWriter, req *http.Request) {
 		CheckError(w, "Error when getting the member", http.StatusInternalServerError) // 500 status code
 	}
 
-	fmt.Println(req.Method, req.URL)
+	fmt.Println(req.Method, req.URL, "/", id)
 	data, _ := json.Marshal(member)
 
 	json.NewEncoder(w).Encode(member)
