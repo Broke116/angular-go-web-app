@@ -4,6 +4,7 @@ import (
 	"angular-go-web-app/go/models"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -28,7 +29,7 @@ var mongoSession = MongoSession{}
 func init() {
 	session, err := mgo.Dial(server)
 	if err != nil {
-		panic(err)
+		log.Fatalln("Session could not be opened. Failed to connect to server.")
 	}
 
 	mongoSession.session = session
@@ -49,19 +50,19 @@ func GetMembersEndpoint(w http.ResponseWriter, req *http.Request) {
 
 // GetMemberEndpoint - GET / member - returns a specific user
 func GetMemberEndpoint(w http.ResponseWriter, req *http.Request) {
-	// get id paramtere
+	// get id parameter
 	vars := mux.Vars(req)
 	id := vars["id"]
 
 	// check if the id is valid
 	if !bson.IsObjectIdHex(id) {
-		CheckError(w, "Invalid ObjectId", http.StatusNotFound) // 404 status code
+		checkError(w, "Invalid ObjectId", http.StatusNotFound) // 404 status code
 	}
 
 	member := bson.ObjectIdHex(id)
 
 	if err := mongoSession.session.DB(database).C(collection).FindId(member); err != nil {
-		CheckError(w, "Error when getting the member", http.StatusInternalServerError) // 500 status code
+		checkError(w, "Error when getting the member", http.StatusInternalServerError) // 500 status code
 	}
 
 	fmt.Println(req.Method, req.URL, "/", id)
@@ -81,12 +82,12 @@ func InsertMemberEndpoint(w http.ResponseWriter, req *http.Request) {
 
 	var member models.Member
 	if err := json.NewDecoder(req.Body).Decode(&member); err != nil { // decode body
-		CheckError(w, err.Error(), http.StatusInternalServerError) // 500 status code
+		checkError(w, err.Error(), http.StatusInternalServerError) // 500 status code
 	}
 
 	member.ID = bson.NewObjectId()
 	if err := mongoSession.session.DB(database).C(collection).Insert(&member); err != nil {
-		CheckError(w, err.Error(), http.StatusInternalServerError) // 500 status code
+		checkError(w, err.Error(), http.StatusInternalServerError) // 500 status code
 	}
 
 	fmt.Println(req.Method, req.URL)
@@ -98,15 +99,23 @@ func InsertMemberEndpoint(w http.ResponseWriter, req *http.Request) {
 // UpdateMemberEndpoint - v1/updateMember PUT - is used to update the related member
 func UpdateMemberEndpoint(w http.ResponseWriter, req *http.Request) {
 	defer req.Body.Close()
+	// get id parameter
+	vars := mux.Vars(req)
+	id := vars["id"]
+
+	// check if the id is valid
+	if !bson.IsObjectIdHex(id) {
+		checkError(w, "Invalid ObjectId", http.StatusNotFound) // 404 status code
+	}
 
 	var member models.Member
 	if err := json.NewDecoder(req.Body).Decode(&member); err != nil {
-		CheckError(w, err.Error(), http.StatusInternalServerError) // 500 status code
+		checkError(w, err.Error(), http.StatusInternalServerError) // 500 status code
 	}
 
 	member.ID = bson.NewObjectId()
 	if err := mongoSession.session.DB(database).C(collection).UpdateId(member.ID, member); err != nil {
-		CheckError(w, err.Error(), http.StatusInternalServerError) // 500 status code
+		checkError(w, err.Error(), http.StatusInternalServerError) // 500 status code
 	}
 
 	fmt.Println(req.Method, req.URL)
@@ -124,13 +133,13 @@ func DeleteMemberEndpoint(w http.ResponseWriter, req *http.Request) {
 
 	// check if the id is valid
 	if !bson.IsObjectIdHex(id) {
-		CheckError(w, "Invalid ObjectId", http.StatusNotFound) // 404 status code
+		checkError(w, "Invalid ObjectId", http.StatusNotFound) // 404 status code
 	}
 
 	member := bson.ObjectIdHex(id)
 
 	if err := mongoSession.session.DB(database).C(collection).Remove(member); err != nil {
-		CheckError(w, err.Error(), http.StatusInternalServerError) // 500 status code
+		checkError(w, err.Error(), http.StatusInternalServerError) // 500 status code
 	}
 
 	fmt.Println(req.Method, req.URL)
@@ -140,8 +149,7 @@ func DeleteMemberEndpoint(w http.ResponseWriter, req *http.Request) {
 	return
 }
 
-// CheckError is used to handle endpoint errors
-func CheckError(w http.ResponseWriter, err string, statusCode int) {
+func checkError(w http.ResponseWriter, err string, statusCode int) {
 	fmt.Println(&models.Error{Definition: err, Statuscode: statusCode})
 	w.WriteHeader(statusCode)
 	return
