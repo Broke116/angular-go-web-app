@@ -27,7 +27,7 @@ type MongoSession struct {
 var mongoSession = MongoSession{}
 
 func init() {
-	session, err := mgo.Dial(server)
+	session, err := mgo.Dial(server) // TO DO add timeout
 	if err != nil {
 		log.Fatalln("Session could not be opened. Failed to connect to server.")
 	}
@@ -59,20 +59,18 @@ func GetMemberEndpoint(w http.ResponseWriter, req *http.Request) {
 		checkError(w, "Invalid ObjectId", http.StatusNotFound) // 404 status code
 	}
 
-	member := bson.ObjectIdHex(id)
+	memberID := bson.ObjectIdHex(id)
+	m := models.Member{}
 
-	if err := mongoSession.session.DB(database).C(collection).FindId(member); err != nil {
-		checkError(w, "Error when getting the member", http.StatusInternalServerError) // 500 status code
+	if err := mongoSession.session.DB(database).C(collection).Find(bson.D{{"id", memberID}}).One(&m); err != nil {
+		checkError(w, "Error when getting the member", http.StatusNotFound) // 404 status code
 	}
 
 	fmt.Println(req.Method, req.URL, "/", id)
-	data, _ := json.Marshal(member)
 
-	json.NewEncoder(w).Encode(member)
+	json.NewEncoder(w).Encode(m)
 	w.Header().Set("Content-Type", "application/json;")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.WriteHeader(http.StatusOK)
-	w.Write(data)
 	return
 }
 
@@ -120,7 +118,6 @@ func UpdateMemberEndpoint(w http.ResponseWriter, req *http.Request) {
 
 	fmt.Println(req.Method, req.URL)
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.WriteHeader(http.StatusOK) // status code
 	return
 }
@@ -138,19 +135,17 @@ func DeleteMemberEndpoint(w http.ResponseWriter, req *http.Request) {
 
 	member := bson.ObjectIdHex(id)
 
-	if err := mongoSession.session.DB(database).C(collection).Remove(member); err != nil {
+	if err := mongoSession.session.DB(database).C(collection).Remove(bson.D{{"id", member}}); err != nil {
 		checkError(w, err.Error(), http.StatusInternalServerError) // 500 status code
 	}
 
 	fmt.Println(req.Method, req.URL)
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.WriteHeader(http.StatusOK) // 200 status code
 	return
 }
 
 func checkError(w http.ResponseWriter, err string, statusCode int) {
 	fmt.Println(&models.Error{Definition: err, Statuscode: statusCode})
-	w.WriteHeader(statusCode)
 	return
 }

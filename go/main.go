@@ -39,7 +39,7 @@ func main() {
 	router.HandleFunc("/v1/insertMember", apimember.InsertMemberEndpoint).Methods("POST")
 	router.HandleFunc("/v1/updateMember/{id}", apimember.UpdateMemberEndpoint).Methods("PUT")
 	router.HandleFunc("/v1/member/{id}", apimember.GetMemberEndpoint).Methods("GET")
-	router.HandleFunc("/v1/member/{id}", apimember.DeleteMemberEndpoint).Methods("DELETE")
+	router.HandleFunc("/v1/member", apimember.DeleteMemberEndpoint).Methods("DELETE")
 
 	log.Fatal(http.ListenAndServe(*addr, router))
 }

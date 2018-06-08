@@ -10,7 +10,7 @@ type Address struct {
 
 // Member defines the fields of member struct
 type Member struct {
-	ID         bson.ObjectId `json:"id" bson:"_id`
+	ID         bson.ObjectId `json:"id" bson:"id`
 	Fullname   string        `json:"fullname" bson:"fullname"`
 	Gender     string        `json:"gender" bson:"gender"`
 	Age        int           `json:"age" bson:"age"`
