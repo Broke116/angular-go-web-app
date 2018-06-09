@@ -41,7 +41,7 @@ func GetMembersEndpoint(w http.ResponseWriter, req *http.Request) {
 	var members []models.Member
 	col.Find(bson.M{}).All(&members)
 
-	fmt.Println(req.Method, req.URL)
+	// fmt.Println(req.Method, req.URL)
 
 	json.NewEncoder(w).Encode(members)
 	w.Header().Set("Content-Type", "application/json;")
@@ -66,7 +66,7 @@ func GetMemberEndpoint(w http.ResponseWriter, req *http.Request) {
 		checkError(w, "Error when getting the member", http.StatusNotFound) // 404 status code
 	}
 
-	fmt.Println(req.Method, req.URL, "/", id)
+	// fmt.Println(req.Method, req.URL, "/", id)
 
 	json.NewEncoder(w).Encode(m)
 	w.Header().Set("Content-Type", "application/json;")
@@ -88,7 +88,7 @@ func InsertMemberEndpoint(w http.ResponseWriter, req *http.Request) {
 		checkError(w, err.Error(), http.StatusInternalServerError) // 500 status code
 	}
 
-	fmt.Println(req.Method, req.URL)
+	// fmt.Println(req.Method, req.URL)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated) // 201 status code
 	return
@@ -116,7 +116,7 @@ func UpdateMemberEndpoint(w http.ResponseWriter, req *http.Request) {
 		checkError(w, err.Error(), http.StatusInternalServerError) // 500 status code
 	}
 
-	fmt.Println(req.Method, req.URL)
+	// fmt.Println(req.Method, req.URL)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK) // status code
 	return
@@ -139,7 +139,7 @@ func DeleteMemberEndpoint(w http.ResponseWriter, req *http.Request) {
 		checkError(w, err.Error(), http.StatusInternalServerError) // 500 status code
 	}
 
-	fmt.Println(req.Method, req.URL)
+	// fmt.Println(req.Method, req.URL)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK) // 200 status code
 	return

@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"angular-go-web-app/go/routes/MemberAPI/v1"
+	"angular-go-web-app/go/utils/middlewares"
 
 	"github.com/gorilla/mux"
 )
@@ -28,18 +29,25 @@ func Index(w http.ResponseWriter, req *http.Request) {
 	}*/
 }
 
+var statusHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("API is up and running"))
+})
+
 func main() {
 	flag.Parse()
 
-	router := mux.NewRouter()
-	router.HandleFunc("/", Index).Methods("GET")
-	router.Handle("/static/", http.StripPrefix("/static",
-		http.FileServer(http.Dir("./assets"))))
-	router.HandleFunc("/v1/member", apimember.GetMembersEndpoint).Methods("GET")
-	router.HandleFunc("/v1/insertMember", apimember.InsertMemberEndpoint).Methods("POST")
-	router.HandleFunc("/v1/updateMember/{id}", apimember.UpdateMemberEndpoint).Methods("PUT")
-	router.HandleFunc("/v1/member/{id}", apimember.GetMemberEndpoint).Methods("GET")
-	router.HandleFunc("/v1/member", apimember.DeleteMemberEndpoint).Methods("DELETE")
+	mw := middlewares.ChainMiddleware(middlewares.Logging, middlewares.Tracing)
 
-	log.Fatal(http.ListenAndServe(*addr, router))
+	r := mux.NewRouter()
+	r.Handle("/status", mw(statusHandler))
+	r.HandleFunc("/", Index).Methods("GET")
+	r.PathPrefix("/static").Handler(http.StripPrefix("/static",
+		http.FileServer(http.Dir("./assets"))))
+	r.HandleFunc("/v1/member", mw(apimember.GetMembersEndpoint)).Methods("GET")
+	r.HandleFunc("/v1/insertMember", mw(apimember.InsertMemberEndpoint)).Methods("POST")
+	r.HandleFunc("/v1/updateMember/{id}", mw(apimember.UpdateMemberEndpoint)).Methods("PUT")
+	r.HandleFunc("/v1/member/{id}", mw(apimember.GetMemberEndpoint)).Methods("GET")
+	r.HandleFunc("/v1/member", mw(apimember.DeleteMemberEndpoint)).Methods("DELETE")
+
+	log.Fatal(http.ListenAndServe(*addr, r))
 }
