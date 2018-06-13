@@ -1,14 +1,13 @@
 package main
 
 import (
+	"angular-go-web-app/go/server"
 	"flag"
 	"log"
 	"net/http"
 
-	"angular-go-web-app/go/routes/MemberAPI/v1"
-	"angular-go-web-app/go/utils/middlewares"
-
-	"github.com/gorilla/mux"
+	"angular-go-web-app/go/config/mongo"
+	"angular-go-web-app/go/config/mongo/member"
 )
 
 var addr = flag.String("addr", ":9090", "http service address")
@@ -36,18 +35,20 @@ var statusHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request
 func main() {
 	flag.Parse()
 
-	mw := middlewares.ChainMiddleware(middlewares.Logging, middlewares.Tracing)
+	ms, err := mongo.NewSession("mongodb://db:27017")
 
-	r := mux.NewRouter()
-	r.Handle("/status", mw(statusHandler))
+	if err != nil {
+		log.Fatalln("unable to connect to mongodb")
+	}
+
+	defer ms.Close()
+
+	memberService := member.MemberServiceInstance(ms.Copy(), "airline", "members")
+	s := server.NewServer(memberService)
+	s.Start()
+
+	/*r.Handle("/status", mw(statusHandler))
 	r.HandleFunc("/", Index).Methods("GET")
 	r.PathPrefix("/static").Handler(http.StripPrefix("/static",
-		http.FileServer(http.Dir("./assets"))))
-	r.HandleFunc("/v1/member", mw(apimember.GetMembersEndpoint)).Methods("GET")
-	r.HandleFunc("/v1/insertMember", mw(apimember.InsertMemberEndpoint)).Methods("POST")
-	r.HandleFunc("/v1/updateMember/{id}", mw(apimember.UpdateMemberEndpoint)).Methods("PUT")
-	r.HandleFunc("/v1/member/{id}", mw(apimember.GetMemberEndpoint)).Methods("GET")
-	r.HandleFunc("/v1/member", mw(apimember.DeleteMemberEndpoint)).Methods("DELETE")
-
-	log.Fatal(http.ListenAndServe(*addr, r))
+		http.FileServer(http.Dir("./assets"))))*/
 }

@@ -9,3 +9,5 @@ Any helpful recommendations and pull requests to this application will be welcom
 # How to run and build
 In order build this application "docker-compose build" to build the linked parts of the application. 
 To run the application use "docker-compose up" command to run it.
+
+TODO : change password logic to send a hashed password in PUT method
