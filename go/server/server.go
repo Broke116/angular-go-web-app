@@ -19,7 +19,7 @@ type Server struct {
 // NewServer is used to create a server
 func NewServer(ms *member.MemberService) *Server {
 	s := Server{router: mux.NewRouter()}
-	apimember.NewMemberRouter(ms, s.newSubRouter("/v1/member"))
+	apimember.MemberControllerConstructor(ms, s.newSubRouter("/v1/member"))
 	return &s
 }
 

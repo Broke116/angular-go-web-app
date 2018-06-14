@@ -2,6 +2,7 @@ package main
 
 import (
 	"angular-go-web-app/go/server"
+	"angular-go-web-app/go/utils/security"
 	"flag"
 	"log"
 	"net/http"
@@ -43,7 +44,8 @@ func main() {
 
 	defer ms.Close()
 
-	memberService := member.MemberServiceInstance(ms.Copy(), "airline", "members")
+	h := security.Hash{}
+	memberService := member.MemberServiceInstance(ms.Copy(), "airline", "members", h)
 	s := server.NewServer(memberService)
 	s.Start()
 

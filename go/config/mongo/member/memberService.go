@@ -3,6 +3,7 @@ package member
 import (
 	"angular-go-web-app/go/config/mongo"
 	"angular-go-web-app/go/models"
+	"angular-go-web-app/go/utils/security"
 	"fmt"
 
 	"gopkg.in/mgo.v2"
@@ -12,13 +13,14 @@ import (
 // MemberService is used store collection information.
 type MemberService struct {
 	collection *mgo.Collection
+	hash       security.Hash
 }
 
 // MemberServiceInstance is an instance of the MemberService
-func MemberServiceInstance(session *mongo.Session, database string, collectionName string) *MemberService {
+func MemberServiceInstance(session *mongo.Session, database string, collectionName string, hash security.Hash) *MemberService {
 	collection := session.GetCollection(database, collectionName)
 	collection.EnsureIndex(memberModelIndex())
-	return &MemberService{collection}
+	return &MemberService{collection, hash}
 }
 
 // GetMembers is a method of MemberService
@@ -44,12 +46,15 @@ func (ms *MemberService) InsertMember(m *models.Member) error {
 	member := newMemberModel(m)
 	fmt.Println("Member service insert member ", member)
 
+	member.Password = ms.hash.Generate(m.Password)
+
 	return ms.collection.Insert(&member)
 }
 
 // UpdateMember is a method of MemberService
 func (ms *MemberService) UpdateMember(m *models.Member, _id string) error {
 	member := newMemberModel(m)
+	member.Password = ms.hash.Generate(m.Password)
 	return ms.collection.UpdateId(bson.ObjectIdHex(_id), member)
 }
 

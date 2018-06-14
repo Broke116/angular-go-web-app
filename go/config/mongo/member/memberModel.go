@@ -37,7 +37,6 @@ func memberModelIndex() mgo.Index {
 func newMemberModel(m *models.Member) *memberModel {
 	return &memberModel{
 		Fullname:   m.Fullname,
-		Password:   m.Password,
 		Gender:     m.Gender,
 		Age:        m.Age,
 		Company:    m.Company,
@@ -61,14 +60,3 @@ func (m *memberModel) toMember() *models.Member {
 		InsertDate: m.InsertDate,
 		Status:     m.Status}
 }
-
-// toMemberArray is a method which is used for getting data from the database and pushing it to the api used to show data to the client.
-//func (m *memberModels) toMemberArray() *models.Members {
-/*members := []*models.Members{
-	&memberModels {
-		memberModel
-	}
-}*/
-//	var members models.Members { &m }
-//	return &members
-//}
