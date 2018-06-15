@@ -1,8 +1,8 @@
 package server
 
 import (
-	"angular-go-web-app/go/config/mongo/member"
-	"angular-go-web-app/go/routes/MemberAPI/v1"
+	"angular-go-web-app/go/routes"
+	"angular-go-web-app/go/services"
 	"log"
 	"net/http"
 
@@ -17,9 +17,10 @@ type Server struct {
 }
 
 // NewServer is used to create a server
-func NewServer(ms *member.MemberService) *Server {
+func NewServer(ms *services.MemberService, us *services.UserService) *Server {
 	s := Server{router: mux.NewRouter()}
-	apimember.MemberControllerConstructor(ms, s.newSubRouter("/v1/member"))
+	controller.MemberControllerConstructor(ms, s.newSubRouter("/v1/member"))
+	controller.UserControllerConstructor(us, s.newSubRouter("/v1/user"))
 	return &s
 }
 

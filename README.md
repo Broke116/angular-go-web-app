@@ -10,4 +10,5 @@ Any helpful recommendations and pull requests to this application will be welcom
 In order build this application "docker-compose build" to build the linked parts of the application. 
 To run the application use "docker-compose up" command to run it.
 
-TODO : change password logic to send a hashed password in PUT method
+TODO : Even though the application converts plain text to hashed password, it is better to receive that password in a different hashed 
+format from the application's frontend side.

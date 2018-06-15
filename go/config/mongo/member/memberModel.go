@@ -8,7 +8,8 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-type memberModel struct {
+// MemberModel is the definition for mongodb object for member
+type MemberModel struct {
 	Id         bson.ObjectId `bson:"_id,omitempty"`
 	Fullname   string        `bson:"fullname"`
 	Password   string        `bson:"password"`
@@ -21,9 +22,11 @@ type memberModel struct {
 	Status     string        `bson:"status"`
 }
 
-type memberModels []memberModel
+// MemberModels is an array of MemberModels
+type MemberModels []MemberModel
 
-func memberModelIndex() mgo.Index {
+// MemberModelIndex is used as an index.
+func MemberModelIndex() mgo.Index {
 	return mgo.Index{
 		Key:        []string{"_id"},
 		Unique:     true,
@@ -33,9 +36,9 @@ func memberModelIndex() mgo.Index {
 	}
 }
 
-// newMemberModel is for converting the model data in which the data comes from the api, to mongodb model.
-func newMemberModel(m *models.Member) *memberModel {
-	return &memberModel{
+// NewMemberModel is for converting the model data in which the data comes from the api, to mongodb model.
+func NewMemberModel(m *models.Member) *MemberModel {
+	return &MemberModel{
 		Fullname:   m.Fullname,
 		Gender:     m.Gender,
 		Age:        m.Age,
@@ -46,8 +49,8 @@ func newMemberModel(m *models.Member) *memberModel {
 		Status:     m.Status}
 }
 
-// toMember is a method which is used for getting data from the database and pushing it to the api used to show data to the client.
-func (m *memberModel) toMember() *models.Member {
+// ToMember is a method which is used for getting data from the database and pushing it to the api used to show data to the client.
+func (m *MemberModel) ToMember() *models.Member {
 	return &models.Member{
 		Id:         m.Id,
 		Fullname:   m.Fullname,

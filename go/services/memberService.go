@@ -1,7 +1,8 @@
-package member
+package services
 
 import (
 	"angular-go-web-app/go/config/mongo"
+	"angular-go-web-app/go/config/mongo/member"
 	"angular-go-web-app/go/models"
 	"angular-go-web-app/go/utils/security"
 	"fmt"
@@ -16,10 +17,10 @@ type MemberService struct {
 	hash       security.Hash
 }
 
-// MemberServiceInstance is an instance of the MemberService
-func MemberServiceInstance(session *mongo.Session, database string, collectionName string, hash security.Hash) *MemberService {
+// MemberServiceConstructor is an instance of the MemberService
+func MemberServiceConstructor(session *mongo.Session, database string, collectionName string, hash security.Hash) *MemberService {
 	collection := session.GetCollection(database, collectionName)
-	collection.EnsureIndex(memberModelIndex())
+	collection.EnsureIndex(member.MemberModelIndex())
 	return &MemberService{collection, hash}
 }
 
@@ -36,14 +37,14 @@ func (ms *MemberService) GetMembers() (*models.Members, error) {
 
 // GetMemberByID is a method of MemberService
 func (ms *MemberService) GetMemberByID(id string) (*models.Member, error) {
-	member := memberModel{}
+	member := member.MemberModel{}
 	err := ms.collection.FindId(bson.ObjectIdHex(id)).One(&member)
-	return member.toMember(), err
+	return member.ToMember(), err
 }
 
 // InsertMember is a method of MemberService
 func (ms *MemberService) InsertMember(m *models.Member) error {
-	member := newMemberModel(m)
+	member := member.NewMemberModel(m)
 	fmt.Println("Member service insert member ", member)
 
 	member.Password = ms.hash.Generate(m.Password)
@@ -53,7 +54,7 @@ func (ms *MemberService) InsertMember(m *models.Member) error {
 
 // UpdateMember is a method of MemberService
 func (ms *MemberService) UpdateMember(m *models.Member, _id string) error {
-	member := newMemberModel(m)
+	member := member.NewMemberModel(m)
 	member.Password = ms.hash.Generate(m.Password)
 	return ms.collection.UpdateId(bson.ObjectIdHex(_id), member)
 }

@@ -2,13 +2,13 @@ package main
 
 import (
 	"angular-go-web-app/go/server"
+	"angular-go-web-app/go/services"
 	"angular-go-web-app/go/utils/security"
 	"flag"
 	"log"
 	"net/http"
 
 	"angular-go-web-app/go/config/mongo"
-	"angular-go-web-app/go/config/mongo/member"
 )
 
 var addr = flag.String("addr", ":9090", "http service address")
@@ -29,14 +29,10 @@ func Index(w http.ResponseWriter, req *http.Request) {
 	}*/
 }
 
-var statusHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("API is up and running"))
-})
-
 func main() {
 	flag.Parse()
 
-	ms, err := mongo.NewSession("mongodb://db:27017")
+	ms, err := mongo.NewSession("mongodb://db:27017") // do not hard code the server address
 
 	if err != nil {
 		log.Fatalln("unable to connect to mongodb")
@@ -45,8 +41,9 @@ func main() {
 	defer ms.Close()
 
 	h := security.Hash{}
-	memberService := member.MemberServiceInstance(ms.Copy(), "airline", "members", h)
-	s := server.NewServer(memberService)
+	memberService := services.MemberServiceConstructor(ms.Copy(), "airline", "members", h)
+	userService := services.UserServiceConstructor(ms.Copy(), "airline", "users", h)
+	s := server.NewServer(memberService, userService)
 	s.Start()
 
 	/*r.Handle("/status", mw(statusHandler))

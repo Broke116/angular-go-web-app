@@ -32,7 +32,7 @@ type Members []Member
 
 //MemberService is an interface providing the logic to accessing data.
 type MemberService interface {
-	GetMembers(members Members) error
+	GetMembers(members Members) (*Members, error)
 	GetMemberByID(id string) (*Member, error)
 	InsertMember(member *Member) error
 	UpdateMember(member *Member, _id string) error

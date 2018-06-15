@@ -1,9 +1,8 @@
-package apimember
+package controller
 
 import (
-	"angular-go-web-app/go/config/mongo/member"
-	mongo "angular-go-web-app/go/config/mongo/member"
 	"angular-go-web-app/go/models"
+	"angular-go-web-app/go/services"
 	"angular-go-web-app/go/utils/middlewares"
 	"encoding/json"
 	"net/http"
@@ -13,18 +12,12 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-const (
-	server     = "mongodb://db:27017"
-	database   = "airline"
-	collection = "members"
-)
-
 type memberController struct {
-	memberService *member.MemberService
+	memberService *services.MemberService
 }
 
 // MemberControllerConstructor is used to initialize member api and define its routes.
-func MemberControllerConstructor(ms *mongo.MemberService, r *mux.Router) *mux.Router {
+func MemberControllerConstructor(ms *services.MemberService, r *mux.Router) *mux.Router {
 	memberController := memberController{ms}
 
 	mw := middlewares.ChainMiddleware(middlewares.Logging, middlewares.Tracing)
