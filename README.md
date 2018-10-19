@@ -1,4 +1,7 @@
 # Angular-go-web-app
+(In development)
+This application has been developing and maintaining by @Broke116. In my other repositories, I am trying to implement a standalone rest api application using GO or Java to learn the grasps of developing a web service. So the intention of this project is for implementing a most demanding approaches to develop a full stack application.
+
 Developing web app based on microservice approach using Angular, GO, Docker and Mongodb
 
 This repository is used for learning Angular and GO by developing a microservice based application. MongoDB will be used for Database. GO api and the database parts of our application are linked. Then the frontend side of the application which will be developed by using Angular will be added to docker-compose file to run all of them altogether.
